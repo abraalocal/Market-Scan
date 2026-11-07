@@ -13,6 +13,13 @@ return [
         'dev_code' => '123456',                 // only when APP_ENV=local
     ],
 
+    'ai' => [
+        'extraction_driver' => env('EXTRACTION_DRIVER', 'fake'),   // fake | claude | n8n
+        'match_driver' => env('PRODUCT_MATCH_DRIVER', 'fake'),     // fake | claude
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+        'n8n_webhook' => env('N8N_EXTRACT_WEBHOOK'),
+    ],
+
     'abraa' => [
         'driver' => env('ABRAA_DRIVER', 'fake'),
         'url' => env('ABRAA_API_URL'),

@@ -13,6 +13,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(\App\Auth\OtpSender::class, fn () => config('marketscan.otp.driver') === 'whatsapp'
             ? new \App\Auth\WhatsAppOtpSender
             : new \App\Auth\LogOtpSender);
+        $this->app->bind(\Anthropic\Client::class, fn () => new \Anthropic\Client(apiKey: (string) env('ANTHROPIC_API_KEY', '')));
+        $this->app->bind(\App\Extraction\Extractor::class, fn ($app) => $app->make(match (config('marketscan.ai.extraction_driver')) {
+            'claude' => \App\Extraction\ClaudeExtractor::class,
+            'n8n' => \App\Extraction\N8nExtractor::class,
+            default => \App\Extraction\FakeExtractor::class,
+        }));
         $this->app->bind(\App\Remote\AbraaClient::class, fn ($app) => $app->make(match (config('marketscan.abraa.driver')) {
             'http' => \App\Remote\HttpAbraaClient::class,
             default => \App\Remote\FakeAbraaClient::class,
