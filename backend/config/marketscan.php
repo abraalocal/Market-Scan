@@ -13,5 +13,20 @@ return [
         'dev_code' => '123456',                 // only when APP_ENV=local
     ],
 
+    'abraa' => [
+        'driver' => env('ABRAA_DRIVER', 'fake'),
+        'url' => env('ABRAA_API_URL'),
+        'token' => env('ABRAA_API_TOKEN'),
+    ],
+
+    'ghl' => [
+        'driver' => env('GHL_DRIVER', 'fake'),
+        'key' => env('GHL_API_KEY'),
+        'location_id' => env('GHL_LOCATION_ID'),
+        'base_url' => env('GHL_BASE_URL', 'https://services.leadconnectorhq.com'),
+        'version' => '2021-07-28',
+        'max_tags' => 50,
+    ],
+
     'photos' => ['max_kb' => 12 * 1024, 'max_side' => 1600],
 ];
