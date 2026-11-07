@@ -9,10 +9,10 @@ before the real APIs exist:
 | Interface | Drivers | Config |
 |---|---|---|
 | `OtpSender` | `log`, `whatsapp` | `OTP_DRIVER` |
-| `Extractor` (card + shelves) | `fake`, `claude`, `n8n` | `EXTRACTION_DRIVER` |
+| `Extractor` (card + shelves) | `fake`, `claude` (default in production), `n8n` | `EXTRACTION_DRIVER`, `ANTHROPIC_API_KEY` |
 | `AbraaClient` (suppliers, keywords, products) | `fake`, `http` | `ABRAA_DRIVER`, `ABRAA_API_URL`, `ABRAA_API_TOKEN` |
 | `GhlClient` (contacts, tags) | `fake`, `http` | `GHL_DRIVER`, `GHL_API_KEY`, `GHL_LOCATION_ID` |
-| `ProductSearch` (web lookup) | `fake`, `brave`, `serpapi`, later `amazon` | `PRODUCT_SEARCH_DRIVER`, key |
+| `ProductSearch` (web lookup) | `fake`, `brave` (first), `serpapi`, later `amazon` | `PRODUCT_SEARCH_DRIVER`, `BRAVE_API_KEY`, `SERPAPI_KEY` |
 | `ProductMatcher` (exact match + details) | `fake`, `claude` | `PRODUCT_MATCH_DRIVER`, `ANTHROPIC_API_KEY` |
 
 The `fake` abraa/GHL drivers keep their data in local tables (`ms_fake_*`, testing only) so search,
@@ -30,5 +30,5 @@ create and update behave like the real systems.
 8. **Submit (FR-31..FR-35, FR-40..FR-43):** product refs + tags; no candidates or "new" → create on abraa.com and GHL (linked) with keywords; "existing" → `ms_supplier_changes` pending; owners → pending change on their shop. Pushes are queued jobs logged in `ms_sync_log` and retried.
 9. **Admin (FR-33, FR-60, FR-61):** list/approve (with edits)/reject supplier changes; approval pushes to both sides.
 10. **New products (FR-50..FR-56):** search → AI match → `ready` / `needs_person`; auto-publish switch; publish via `AbraaClient::createProduct` with images (downloaded and stored), MOQ rule; admin edit/publish/reject.
-11. **Targets + owner shop (FR-10, FR-11).**
+11. **Targets, owner shop, welcome (FR-10, FR-11, FR-12).**
 12. **Live run** of the Capture App against the backend; fix anything that does not match the contract.

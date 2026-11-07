@@ -43,8 +43,9 @@ Capture App visit ─► AI reads card + shelves ─► review on the phone ─�
 | FR-07 | Offline: a full visit can be captured without signal and uploads by itself when back online. Opening the app offline keeps the session. |
 | FR-08 | AI review before submit: card fields and products, low-confidence ones highlighted, every field editable, unclear product names confirmable. |
 | FR-09 | Visit status: Waiting (on phone) → Processing → Review → Submitted → Pending approval / Live. |
-| FR-10 | Daily targets per person (visits, new suppliers); admin team view with items waiting for approval. *(carried over — confirm)* |
+| FR-10 | Daily targets per person (visits, new suppliers); admin team view with items waiting for approval. |
 | FR-11 | Owner mode: invite link/QR, same capture, "My shop" with product count and approval state. No buyer requests screen. |
+| FR-12 | After submit, sales staff send the supplier a welcome on WhatsApp (through GHL) with their abraa.com join link, or show it as a QR for the owner. |
 
 ### 3.2 AI reading
 | ID | Requirement |
@@ -62,7 +63,7 @@ Capture App visit ─► AI reads card + shelves ─► review on the phone ─�
 | FR-32 | **Candidates found:** sales staff must choose one candidate or "It's a new supplier". Choosing a candidate creates a **supplier update waiting for admin approval**: old and new values side by side, plus keywords to add. Owners never see this step. |
 | FR-33 | Admin approves or rejects each update (and may edit values first). Approved: the supplier is updated on abraa.com and GHL and gets the new keywords. Rejected: nothing is pushed; the reason is kept. |
 | FR-34 | An existing record is never overwritten silently: filled fields change only through an approved update. New phone numbers are added, not replaced. |
-| FR-35 | Owner listings of their own shop are also updates waiting for admin approval *(assumption — confirm)*. |
+| FR-35 | Owner listings of their own shop are also updates waiting for admin approval, including the first listing of a new shop. |
 | FR-36 | abraa.com and GHL stay linked: the abraa.com supplier stores the GHL contact id and vice versa where the APIs allow; every push is logged with its result and retried on failure. |
 
 ### 3.4 Product keywords (tags)
@@ -77,7 +78,7 @@ Capture App visit ─► AI reads card + shelves ─► review on the phone ─�
 | ID | Requirement |
 |---|---|
 | FR-50 | Each confirmed product is checked against abraa.com (barcode, then brand + line + name + size). Listed: tag only. Not listed: a new-product record is created. |
-| FR-51 | The new product is looked up on reliable sources through a pluggable search driver (web search API now; Amazon Product Advertising API later; brand sites). Marketplaces' terms are respected: official APIs or licensed data, no scraping that a site forbids. |
+| FR-51 | The new product is looked up on reliable sources through a pluggable search driver: Brave Search API and SerpAPI (compare, keep the better), Amazon Product Advertising API later, brand sites. Marketplaces' terms are respected: official APIs or licensed data, no scraping that a site forbids. |
 | FR-52 | AI compares candidates with what was seen on the shelf (brand, line, name, size, barcode, packaging photo) and decides **exact match / not exact**, with confidence and reasons. |
 | FR-53 | Exact match: title and description (EN + AR), key specs, category, size, images and the source URL are filled in. MOQ 12 (24 for items ≤ 100 ml/g); no price. |
 | FR-54 | **Auto-publish switch** (admin, on/off): on → exact matches are listed on abraa.com straight away; off → they wait for one-click admin approval. Default **off**. |
@@ -105,7 +106,7 @@ Capture App visit ─► AI reads card + shelves ─► review on the phone ─�
 
 ## 5. Open items
 - **Yasser:** abraa.com API for suppliers (search, create, update, keywords) and products (search, create with images). Until it exists the backend runs a stand-in driver.
-- **Search provider** for product lookup (Brave Search API, SerpAPI or similar) and its key. Google's Custom Search API is closed to new customers and ends on 1 Jan 2027.
+- **Keys:** Anthropic API key (AI reading and product matching run on Claude, called by the backend), Brave Search API and SerpAPI keys. Google's Custom Search API is closed to new customers and ends on 1 Jan 2027.
 - **Amazon Product Advertising API** account (later).
 - **Mostafa:** OTP channel (GHL or WhatsApp Business API); GHL custom field for the abraa.com supplier id.
 

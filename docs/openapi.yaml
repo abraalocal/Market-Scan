@@ -180,6 +180,12 @@ paths:
           description: Submitted
           content: { application/json: { schema: { type: object, properties: { visit: { $ref: '#/components/schemas/Visit' }, outcome: { type: string, enum: [supplier_created, update_pending] }, supplier_id: { type: integer, nullable: true }, change_id: { type: integer, nullable: true }, keywords: { type: integer }, new_products: { type: integer } } } } }
         '422': { description: Supplier choice missing or unknown candidate }
+  /visits/{uuid}/welcome:
+    post:
+      summary: WhatsApp welcome through GHL, or the join link for a QR (FR-12)
+      parameters: [ { name: uuid, in: path, required: true, schema: { type: string } } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { channel: { type: string, enum: [whatsapp, qr] } } } } } }
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { join_url: { type: string }, message: { type: string }, sent: { type: boolean } } } } } }, '409': { description: Visit not submitted yet } }
   /targets/me:
     get: { summary: Today's visits and new suppliers vs target (FR-10), responses: { '200': { description: OK } } }
   /owner/shop:
