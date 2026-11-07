@@ -28,7 +28,7 @@ function Done() {
   const contact = v.fields.find(f => f.key === 'contact_name')?.value || company;
   const pending = (res?.outcome ?? (v.status === 'pending_approval' ? 'update_pending' : 'supplier_created')) === 'update_pending';
 
-  async function whatsapp() { try { const w = await api.welcome(uuid, 'whatsapp'); setWa(w); if (w.sent) toast(t.welcomeSent); } catch { toast(t.error); } }
+  async function whatsapp() { try { setWa(await api.welcome(uuid, 'whatsapp')); } catch { toast(t.error); } }
   async function showQr() {
     try { const w = await api.welcome(uuid, 'qr'); setQr({ url: w.join_url, img: await QRCode.toDataURL(w.join_url, { width: 400, margin: 1, color: { dark: '#0d1b36', light: '#ffffff' } }) }); }
     catch { toast(t.error); }

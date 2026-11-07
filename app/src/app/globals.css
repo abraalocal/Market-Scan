@@ -89,10 +89,12 @@ textarea.ta { width: 100%; border: 1.5px solid var(--line); border-radius: 12px;
 .cand { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; text-align: start; width: 100%; }
 .cand.on { border-color: var(--accent); background: var(--accent-soft); }
 .radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #c4cad8; flex: none; margin-top: 2px; } .cand.on .radio { border: 6px solid var(--accent); }
-.diff { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 6px 10px; font-size: 13px; align-items: start; }
+.diff { display: grid; grid-template-columns: 78px minmax(0, 1fr) minmax(0, 1fr); gap: 6px 10px; font-size: 13px; align-items: start; }
+.diff > span { min-width: 0; overflow-wrap: anywhere; }
+.diff input.field { width: 100%; min-width: 0; }
 .diff .hd { font-weight: 600; color: var(--muted); font-size: 12px; } .diff .chg { color: var(--accent); font-weight: 600; }
 .scrim { position: fixed; inset: 0; background: rgba(13,27,54,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
-.sheet { width: 100%; max-width: 480px; background: var(--card); border-radius: 20px 20px 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; max-height: 90dvh; overflow: auto; }
+.sheet { width: 100%; max-width: 480px; overscroll-behavior: contain; background: var(--card); border-radius: 20px 20px 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; max-height: 90dvh; overflow: auto; }
 .sheet h3 { margin: 0; }
 .msg { white-space: pre-wrap; background: #e7f8ec; border-radius: 12px; padding: 12px; font-size: 14px; }
 .offline { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--yellow-soft); color: var(--yellow-ink); font-size: 13px; font-weight: 600; padding: 8px; }

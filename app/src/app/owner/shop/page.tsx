@@ -40,7 +40,7 @@ function Shop() {
             <div className="kpis">
               <div className="kpi"><span className="s">{t.productsListed}</span><b>{shop.products}</b>{shop.self_reported && <Chip tone="yellow">{t.selfReported}</Chip>}</div>
               <div className="kpi"><span className="s">abraa.com</span><b style={{ fontSize: 16 }}>{shop.on_abraa ? t.liveOnAbraa : t.pendingApproval}</b>
-                <Chip tone={shop.pending_approval ? 'yellow' : 'green'}>{shop.pending_approval ? t.pendingApproval : t.liveOnAbraa}</Chip></div>
+                {shop.pending_approval && shop.on_abraa && <Chip tone="yellow">{t.pendingApproval}</Chip>}</div>
             </div>
             {shop.self_reported && <div className="note y"><Icon n="shield" />{t.selfReportedNote}</div>}
             <button className="btn p" onClick={capture}><Icon n="camera" />{t.addMore}</button>
