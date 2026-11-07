@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierChangeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ShopController;
@@ -27,6 +28,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/supplier-changes', [SupplierChangeController::class, 'index']);
         Route::post('/supplier-changes/{id}/approve', [SupplierChangeController::class, 'approve'])->whereNumber('id');
         Route::post('/supplier-changes/{id}/reject', [SupplierChangeController::class, 'reject'])->whereNumber('id');
+        Route::get('/products', [ProductController::class, 'index']);
+        Route::patch('/products/{id}', [ProductController::class, 'update'])->whereNumber('id');
+        Route::post('/products/{id}/publish', [ProductController::class, 'publish'])->whereNumber('id');
+        Route::post('/products/{id}/reject', [ProductController::class, 'reject'])->whereNumber('id');
+        Route::get('/settings', [ProductController::class, 'settings']);
+        Route::put('/settings', [ProductController::class, 'saveSettings']);
     });
 });
 

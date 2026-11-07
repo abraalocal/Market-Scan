@@ -20,6 +20,12 @@ return [
         'n8n_webhook' => env('N8N_EXTRACT_WEBHOOK'),
     ],
 
+    'search' => [
+        'driver' => env('PRODUCT_SEARCH_DRIVER', 'fake'),   // fake | brave | serpapi
+        'brave_key' => env('BRAVE_API_KEY'),
+        'serpapi_key' => env('SERPAPI_KEY'),
+    ],
+
     'abraa' => [
         'driver' => env('ABRAA_DRIVER', 'fake'),
         'url' => env('ABRAA_API_URL'),
