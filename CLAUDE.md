@@ -15,7 +15,6 @@ Source of truth: `docs/requirements.md` (FR/NFR ids), `docs/schema.sql`, `docs/o
 | `app/` | Capture App: Next.js 14 (App Router, TypeScript), installable mobile web app |
 | `backend/` | Laravel 11 API on its own MySQL 8 database; plan in `backend/BUILD.md` |
 | `docs/` | Requirements, schema, API contract |
-| `prototype/` | Clickable HTML prototype (design reference) |
 
 ## Rules
 - **Never connect to or write into the abraa.com database.** abraa.com is reached only through its API (`AbraaClient`). Do not touch the old abraa.com repository or the earlier `abraa-market-scan` repo.
