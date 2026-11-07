@@ -1,0 +1,233 @@
+openapi: 3.0.3
+info:
+  title: Market Scan API
+  version: 0.1.0
+  description: |
+    Capture App ↔ Laravel backend. App endpoints use a Sanctum bearer token from /auth/verify.
+    abraa.com and GoHighLevel are called by the backend (outbound), never the other way round,
+    except the optional n8n callback which uses X-Service-Token. FR ids refer to docs/requirements.md.
+servers: [ { url: /api } ]
+components:
+  securitySchemes:
+    app: { type: http, scheme: bearer }
+    service: { type: apiKey, in: header, name: X-Service-Token }
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        phone: { type: string }
+        role: { type: string, enum: [field_sales, admin, owner] }
+        area: { type: string, nullable: true }
+        locale: { type: string, enum: [en, ar] }
+        supplier_id: { type: integer, nullable: true }
+    ShopHit:
+      type: object
+      properties:
+        id: { type: integer }
+        company_name: { type: string }
+        area: { type: string, nullable: true }
+        distance_m: { type: integer, nullable: true }
+        last_visit_at: { type: string, format: date-time, nullable: true }
+        badge: { type: string, enum: [on_abraa, in_ghl, self_reported, new] }
+        phones: { type: array, items: { type: string } }
+    Field:
+      type: object
+      properties:
+        key: { type: string, enum: [company_name, contact_name, whatsapp, landline, email, website, area] }
+        value: { type: string }
+        confidence: { type: number, description: "Below 0.8 the app highlights the field" }
+    FoundProduct:
+      type: object
+      properties:
+        id: { type: string }
+        category: { type: string }
+        brand: { type: string }
+        line: { type: string, nullable: true }
+        name: { type: string }
+        size: { type: string, nullable: true }
+        barcode: { type: string, nullable: true }
+        confidence: { type: number }
+        status: { type: string, enum: [on_abraa, new, check], description: "Computed by the server" }
+        closeup_photo_id: { type: integer, nullable: true }
+    Candidate:
+      type: object
+      description: An existing supplier found on abraa.com, GHL or locally (FR-30)
+      properties:
+        key: { type: string, description: "Opaque id to send back in submit" }
+        company_name: { type: string }
+        contact_name: { type: string, nullable: true }
+        phones: { type: array, items: { type: string } }
+        email: { type: string, nullable: true }
+        area: { type: string, nullable: true }
+        on_abraa: { type: boolean }
+        in_ghl: { type: boolean }
+        match: { type: string, enum: [phone, email, name_area, near] }
+        score: { type: number }
+    Visit:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        shop_name: { type: string }
+        supplier_id: { type: integer, nullable: true }
+        source: { type: string, enum: [field_visit, owner] }
+        status: { type: string, enum: [draft, processing, review, needs_review, submitted, pending_approval, live] }
+        photo_counts: { type: object, additionalProperties: { type: integer } }
+        fields: { type: array, items: { $ref: '#/components/schemas/Field' } }
+        products: { type: array, items: { $ref: '#/components/schemas/FoundProduct' } }
+        totals: { type: object, properties: { found: { type: integer }, on_abraa: { type: integer }, new: { type: integer }, check: { type: integer } } }
+        candidates: { type: array, items: { $ref: '#/components/schemas/Candidate' }, description: "Filled once status = review; empty for owners" }
+        captured_at: { type: string, format: date-time }
+        error: { type: string, nullable: true }
+    SupplierChange:
+      type: object
+      properties:
+        id: { type: integer }
+        visit_uuid: { type: string }
+        requested_by: { type: string }
+        company_name: { type: string }
+        current: { type: object, additionalProperties: { type: string, nullable: true } }
+        proposed: { type: object, additionalProperties: { type: string, nullable: true } }
+        keywords_to_add: { type: array, items: { type: string } }
+        status: { type: string, enum: [pending, approved, rejected] }
+        created_at: { type: string, format: date-time }
+    NewProduct:
+      type: object
+      properties:
+        id: { type: integer }
+        status: { type: string, enum: [searching, ready, needs_person, published, rejected] }
+        seen: { type: object, description: "What the shelf showed", properties: { brand: { type: string }, line: { type: string, nullable: true }, name: { type: string }, size: { type: string, nullable: true }, barcode: { type: string, nullable: true } } }
+        match_confidence: { type: number, nullable: true }
+        match_reasons: { type: string, nullable: true }
+        source_name: { type: string, nullable: true }
+        source_url: { type: string, nullable: true }
+        title_en: { type: string, nullable: true }
+        title_ar: { type: string, nullable: true }
+        desc_en: { type: string, nullable: true }
+        desc_ar: { type: string, nullable: true }
+        specs: { type: object, nullable: true }
+        images: { type: array, items: { type: string } }
+        shelf_photo_url: { type: string, nullable: true }
+        moq: { type: integer }
+        abraa_product_id: { type: integer, nullable: true }
+security: [ { app: [] } ]
+paths:
+  /auth/otp:
+    post:
+      summary: Send a 6-digit code (FR-01)
+      security: []
+      requestBody: { content: { application/json: { schema: { type: object, required: [phone, role], properties: { phone: { type: string }, role: { type: string, enum: [field_sales, owner] }, invite: { type: string } } } } } }
+      responses: { '200': { description: Sent }, '422': { description: Number not on the team }, '429': { description: Too many requests } }
+  /auth/verify:
+    post:
+      security: []
+      requestBody: { content: { application/json: { schema: { type: object, required: [phone, code], properties: { phone: { type: string }, code: { type: string } } } } } }
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { token: { type: string }, user: { $ref: '#/components/schemas/User' } } } } } }, '422': { description: Wrong or expired code } }
+  /me:
+    get: { responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } } } }
+  /shops/search:
+    get:
+      summary: By name or phone, or nearby when q is empty (FR-03). Sales and admin only.
+      parameters: [ { name: q, in: query, schema: { type: string } }, { name: lat, in: query, schema: { type: number } }, { name: lng, in: query, schema: { type: number } }, { name: radius_m, in: query, schema: { type: integer, default: 200 } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ShopHit' } } } } } }
+  /shops/check-phone:
+    get:
+      summary: Duplicate check on a phone (FR-04)
+      parameters: [ { name: phone, in: query, required: true, schema: { type: string } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { match: { $ref: '#/components/schemas/ShopHit' } } } } } } }
+  /visits:
+    get:
+      parameters: [ { name: status, in: query, schema: { type: string } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Visit' } } } } } }
+    post:
+      summary: Create a visit; idempotent on uuid (FR-07)
+      requestBody: { content: { application/json: { schema: { type: object, required: [uuid, shop_name], properties: { uuid: { type: string }, supplier_id: { type: integer, nullable: true }, shop_name: { type: string }, lat: { type: number }, lng: { type: number }, captured_at: { type: string, format: date-time } } } } } }
+      responses: { '200': { description: Existing visit }, '201': { description: Created } }
+  /visits/{uuid}:
+    get:
+      parameters: [ { name: uuid, in: path, required: true, schema: { type: string } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Visit' } } } } }
+  /visits/{uuid}/photos:
+    post:
+      parameters: [ { name: uuid, in: path, required: true, schema: { type: string } } ]
+      requestBody: { content: { multipart/form-data: { schema: { type: object, required: [type, file, client_id], properties: { type: { type: string, enum: [card, storefront, shelf, closeup] }, file: { type: string, format: binary }, client_id: { type: string } } } } } }
+      responses: { '201': { description: Stored }, '200': { description: Repeat of a stored client_id } }
+  /visits/{uuid}/extract:
+    post:
+      summary: Start AI reading; the app polls GET /visits/{uuid} until status = review (FR-20..FR-23)
+      parameters: [ { name: uuid, in: path, required: true, schema: { type: string } } ]
+      responses: { '202': { description: Started }, '422': { description: Missing photos } }
+  /visits/{uuid}/submit:
+    post:
+      summary: Submit the reviewed visit (FR-30..FR-35, FR-40, FR-50)
+      description: |
+        `supplier.choice` is required for sales staff when the visit has candidates:
+        `new` creates the supplier on abraa.com and GHL now; `existing` with a candidate `key`
+        creates a supplier update waiting for admin approval. Owners send no supplier choice.
+      parameters: [ { name: uuid, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields: { type: array, items: { $ref: '#/components/schemas/Field' } }
+                products: { type: array, items: { $ref: '#/components/schemas/FoundProduct' } }
+                supplier: { type: object, properties: { choice: { type: string, enum: [new, existing] }, key: { type: string } } }
+      responses:
+        '200':
+          description: Submitted
+          content: { application/json: { schema: { type: object, properties: { visit: { $ref: '#/components/schemas/Visit' }, outcome: { type: string, enum: [supplier_created, update_pending] }, supplier_id: { type: integer, nullable: true }, change_id: { type: integer, nullable: true }, keywords: { type: integer }, new_products: { type: integer } } } } }
+        '422': { description: Supplier choice missing or unknown candidate }
+  /targets/me:
+    get: { summary: Today's visits and new suppliers vs target (FR-10), responses: { '200': { description: OK } } }
+  /owner/shop:
+    get: { summary: Owner's shop, product count, approval state (FR-11), responses: { '200': { description: OK } } }
+  /admin/summary:
+    get: { summary: Counts waiting for approval and team today (FR-10, FR-60), responses: { '200': { description: OK }, '403': { description: Not an admin } } }
+  /admin/supplier-changes:
+    get:
+      parameters: [ { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SupplierChange' } } } } }, '403': { description: Not an admin } }
+  /admin/supplier-changes/{id}/approve:
+    post:
+      summary: Push the update to abraa.com and GHL (FR-33). Values may be edited first.
+      parameters: [ { name: id, in: path, required: true, schema: { type: integer } } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { proposed: { type: object, additionalProperties: { type: string } } } } } } }
+      responses: { '200': { description: Approved }, '409': { description: Already decided } }
+  /admin/supplier-changes/{id}/reject:
+    post:
+      parameters: [ { name: id, in: path, required: true, schema: { type: integer } } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { note: { type: string } } } } } }
+      responses: { '200': { description: Rejected } }
+  /admin/products:
+    get:
+      parameters: [ { name: status, in: query, schema: { type: string, enum: [searching, ready, needs_person, published, rejected] } } ]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/NewProduct' } } } } } }
+  /admin/products/{id}:
+    patch:
+      summary: Edit before publishing (FR-55)
+      parameters: [ { name: id, in: path, required: true, schema: { type: integer } } ]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/NewProduct' } } } }
+      responses: { '200': { description: Saved } }
+  /admin/products/{id}/publish:
+    post:
+      parameters: [ { name: id, in: path, required: true, schema: { type: integer } } ]
+      responses: { '200': { description: Listed on abraa.com } }
+  /admin/products/{id}/reject:
+    post:
+      parameters: [ { name: id, in: path, required: true, schema: { type: integer } } ]
+      responses: { '200': { description: Rejected } }
+  /admin/settings:
+    get: { responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { auto_publish: { type: boolean } } } } } } } }
+    put:
+      summary: Auto-publish switch (FR-54)
+      requestBody: { content: { application/json: { schema: { type: object, properties: { auto_publish: { type: boolean } } } } } }
+      responses: { '200': { description: Saved } }
+  /integrations/extraction-result:
+    post:
+      summary: Optional - AI result posted by n8n when EXTRACTION_DRIVER=n8n
+      security: [ { service: [] } ]
+      requestBody: { content: { application/json: { schema: { type: object, required: [visit_uuid], properties: { visit_uuid: { type: string }, fields: { type: array, items: { $ref: '#/components/schemas/Field' } }, products: { type: array, items: { $ref: '#/components/schemas/FoundProduct' } }, error: { type: string, nullable: true } } } } } }
+      responses: { '200': { description: Stored } }
