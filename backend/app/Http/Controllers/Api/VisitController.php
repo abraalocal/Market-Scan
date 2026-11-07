@@ -112,6 +112,36 @@ class VisitController extends Controller
         return response()->json(VisitView::one($v->fresh()), 202);
     }
 
+    public function submit(Request $request, string $uuid, \App\Visits\SubmitVisit $submit): JsonResponse
+    {
+        $v = self::visitFor($request->user(), $uuid, own: true);
+        $data = $request->validate([
+            'fields' => ['array'],
+            'fields.*.key' => ['required', 'in:'.implode(',', \App\Extraction\ExtractionResult::FIELD_KEYS)],
+            'fields.*.value' => ['present', 'nullable', 'string', 'max:255'],
+            'fields.*.confidence' => ['nullable', 'numeric'],
+            'products' => ['array', 'max:500'],
+            'products.*.id' => ['required', 'string', 'max:64'],
+            'products.*.category' => ['nullable', 'string', 'max:190'],
+            'products.*.brand' => ['required', 'string', 'max:190'],
+            'products.*.line' => ['nullable', 'string', 'max:190'],
+            'products.*.name' => ['required', 'string', 'max:190'],
+            'products.*.size' => ['nullable', 'string', 'max:40'],
+            'products.*.barcode' => ['nullable', 'string', 'max:32'],
+            'products.*.confidence' => ['nullable', 'numeric', 'between:0,1'],
+            'products.*.closeup_photo_id' => ['nullable', 'integer'],
+            'supplier' => ['nullable', 'array'],
+            'supplier.choice' => ['nullable', 'in:new,existing'],
+            'supplier.key' => ['nullable', 'string', 'max:40'],
+        ]);
+        abort_unless(in_array($v->status, ['review', 'needs_review', 'submitted', 'pending_approval', 'live'], true), 409, 'The AI review is not ready yet.');
+        $fields = $data['fields'] ?? ($v->extraction['fields'] ?? []);
+        $products = array_map(fn ($p) => $p + ['category' => '', 'confidence' => 1], $data['products'] ?? ($v->extraction['products'] ?? []));
+        $summary = $submit($v, $request->user(), $fields, $products, $data['supplier'] ?? null);
+
+        return response()->json(['visit' => VisitView::one($v->fresh())] + $summary);
+    }
+
     /** A visit the user may see: their own; admins may read any. */
     public static function visitFor(User $u, string $uuid, bool $own = false): Visit
     {

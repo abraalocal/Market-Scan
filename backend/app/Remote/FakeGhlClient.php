@@ -49,7 +49,7 @@ class FakeGhlClient implements GhlClient
     public function updateContact(string $id, array $data): void
     {
         $c = $this->getContact($id) ?? throw new \RuntimeException("GHL contact $id not found");
-        DB::table('ms_fake_ghl_contacts')->where('id', $id)->update(['data' => json_encode(array_merge($this->clean($c), $this->clean($data))), 'updated_at' => now()]);
+        DB::table('ms_fake_ghl_contacts')->where('id', $id)->update(['data' => json_encode(array_merge($this->clean($c), $this->partial($data))), 'updated_at' => now()]);
     }
 
     public function addTags(string $id, array $tags): void
@@ -75,5 +75,11 @@ class FakeGhlClient implements GhlClient
         $out['phones'] = array_values($out['phones'] ?? []);
 
         return $out;
+    }
+
+    /** Only the keys given: an update never blanks other fields. */
+    private function partial(array $d): array
+    {
+        return array_intersect_key($d, array_flip(['company_name', 'contact_name', 'phones', 'email', 'website', 'area', 'abraa_supplier_id']));
     }
 }

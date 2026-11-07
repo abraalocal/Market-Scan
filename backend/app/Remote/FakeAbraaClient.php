@@ -43,7 +43,7 @@ class FakeAbraaClient implements AbraaClient
     {
         $s = $this->getSupplier($id) ?? throw new \RuntimeException("abraa.com supplier $id not found");
         DB::table('ms_fake_abraa_suppliers')->where('id', $id)->update([
-            'data' => json_encode(array_merge($this->clean($s), $this->clean($data))), 'updated_at' => now(),
+            'data' => json_encode(array_merge($this->clean($s), $this->partial($data))), 'updated_at' => now(),
         ]);
     }
 
@@ -88,5 +88,11 @@ class FakeAbraaClient implements AbraaClient
         $out['phones'] = array_values($out['phones'] ?? []);
 
         return $out;
+    }
+
+    /** Only the keys given: an update never blanks other fields. */
+    private function partial(array $d): array
+    {
+        return array_intersect_key($d, array_flip(['company_name', 'contact_name', 'phones', 'email', 'website', 'area', 'ghl_contact_id']));
     }
 }

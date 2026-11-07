@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/visits/{uuid}', [VisitController::class, 'show']);
     Route::post('/visits/{uuid}/photos', [VisitController::class, 'uploadPhoto']);
     Route::post('/visits/{uuid}/extract', [VisitController::class, 'extract']);
+    Route::post('/visits/{uuid}/submit', [VisitController::class, 'submit']);
 });
 
 // Automation callbacks (optional n8n driver). Shared secret in X-Service-Token.
