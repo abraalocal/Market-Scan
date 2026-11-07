@@ -179,3 +179,8 @@ CREATE TABLE ms_settings (
   updated_by BIGINT UNSIGNED NULL,
   updated_at TIMESTAMP NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Development and tests only: stand-ins for abraa.com and GHL used by ABRAA_DRIVER=fake / GHL_DRIVER=fake.
+-- CREATE TABLE ms_fake_abraa_suppliers (id, data JSON, keywords JSON, timestamps)
+-- CREATE TABLE ms_fake_abraa_products  (id, data JSON, timestamps)
+-- CREATE TABLE ms_fake_ghl_contacts    (id VARCHAR(64), data JSON, tags JSON, timestamps)
