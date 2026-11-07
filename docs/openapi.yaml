@@ -63,7 +63,7 @@ components:
         area: { type: string, nullable: true }
         on_abraa: { type: boolean }
         in_ghl: { type: boolean }
-        match: { type: string, enum: [phone, email, name_area, near] }
+        match: { type: string, enum: [selected, phone, email, name_area, near], description: "selected = the shop picked when the visit started" }
         score: { type: number }
     Visit:
       type: object

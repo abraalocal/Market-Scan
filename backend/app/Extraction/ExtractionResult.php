@@ -54,6 +54,8 @@ class ExtractionResult
             'at' => now()->toIso8601ZuluString(),
         ];
         $visit->status = 'review';
+        // FR-30: who this shop may already be on abraa.com / GHL. Owners list their own shop only.
+        $visit->candidates = $visit->source === 'owner' ? [] : app(\App\Suppliers\Candidates::class)->forVisit($visit);
         $visit->save();
 
         return $visit;
