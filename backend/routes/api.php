@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierChangeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\VisitController;
 use App\Http\Controllers\Integrations\ExtractionController;
 use Illuminate\Support\Facades\Route;
@@ -23,8 +24,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/visits/{uuid}/photos', [VisitController::class, 'uploadPhoto']);
     Route::post('/visits/{uuid}/extract', [VisitController::class, 'extract']);
     Route::post('/visits/{uuid}/submit', [VisitController::class, 'submit']);
+    Route::post('/visits/{uuid}/welcome', [TeamController::class, 'welcome']);
+    Route::get('/targets/me', [TeamController::class, 'targets']);
+    Route::get('/owner/shop', [TeamController::class, 'ownerShop']);
 
     Route::prefix('admin')->middleware('admin')->group(function () {
+        Route::get('/summary', [TeamController::class, 'summary']);
         Route::get('/supplier-changes', [SupplierChangeController::class, 'index']);
         Route::post('/supplier-changes/{id}/approve', [SupplierChangeController::class, 'approve'])->whereNumber('id');
         Route::post('/supplier-changes/{id}/reject', [SupplierChangeController::class, 'reject'])->whereNumber('id');

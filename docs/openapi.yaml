@@ -80,6 +80,26 @@ components:
         candidates: { type: array, items: { $ref: '#/components/schemas/Candidate' }, description: "Filled once status = review; empty for owners" }
         captured_at: { type: string, format: date-time }
         error: { type: string, nullable: true }
+    Targets:
+      type: object
+      properties: { visits: { type: integer }, visit_target: { type: integer }, suppliers: { type: integer }, supplier_target: { type: integer } }
+    OwnerShop:
+      type: object
+      properties:
+        supplier_id: { type: integer }
+        company_name: { type: string }
+        area: { type: string }
+        products: { type: integer }
+        self_reported: { type: boolean }
+        pending_approval: { type: boolean }
+        on_abraa: { type: boolean }
+    AdminSummary:
+      type: object
+      properties:
+        waiting: { type: object, properties: { supplier_changes: { type: integer }, products_ready: { type: integer }, products_need_person: { type: integer }, visits_need_review: { type: integer } } }
+        auto_publish: { type: boolean }
+        totals: { $ref: '#/components/schemas/Targets' }
+        members: { type: array, items: { allOf: [ { $ref: '#/components/schemas/Targets' } ], properties: { user_id: { type: integer }, name: { type: string }, area: { type: string } } } }
     SupplierChange:
       type: object
       properties:
@@ -191,11 +211,13 @@ paths:
       requestBody: { content: { application/json: { schema: { type: object, properties: { channel: { type: string, enum: [whatsapp, qr] } } } } } }
       responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { join_url: { type: string }, message: { type: string }, sent: { type: boolean } } } } } }, '409': { description: Visit not submitted yet } }
   /targets/me:
-    get: { summary: Today's visits and new suppliers vs target (FR-10), responses: { '200': { description: OK } } }
+    get: { summary: Today's visits and new suppliers vs target (FR-10), responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Targets' } } } } } }
   /owner/shop:
-    get: { summary: Owner's shop, product count, approval state (FR-11), responses: { '200': { description: OK } } }
+    get:
+      summary: Owner's shop, product count, approval state (FR-11). JSON null before the owner has a shop.
+      responses: { '200': { description: OK, content: { application/json: { schema: { allOf: [ { $ref: '#/components/schemas/OwnerShop' } ], nullable: true } } } }, '403': { description: Not an owner } }
   /admin/summary:
-    get: { summary: Counts waiting for approval and team today (FR-10, FR-60), responses: { '200': { description: OK }, '403': { description: Not an admin } } }
+    get: { summary: Counts waiting for approval and team today (FR-10, FR-60), responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AdminSummary' } } } }, '403': { description: Not an admin } } }
   /admin/supplier-changes:
     get:
       parameters: [ { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
