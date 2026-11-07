@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SupplierChangeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\VisitController;
@@ -21,6 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/visits/{uuid}/photos', [VisitController::class, 'uploadPhoto']);
     Route::post('/visits/{uuid}/extract', [VisitController::class, 'extract']);
     Route::post('/visits/{uuid}/submit', [VisitController::class, 'submit']);
+
+    Route::prefix('admin')->middleware('admin')->group(function () {
+        Route::get('/supplier-changes', [SupplierChangeController::class, 'index']);
+        Route::post('/supplier-changes/{id}/approve', [SupplierChangeController::class, 'approve'])->whereNumber('id');
+        Route::post('/supplier-changes/{id}/reject', [SupplierChangeController::class, 'reject'])->whereNumber('id');
+    });
 });
 
 // Automation callbacks (optional n8n driver). Shared secret in X-Service-Token.

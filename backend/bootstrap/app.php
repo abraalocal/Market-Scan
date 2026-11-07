@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // API only: never redirect a guest to a login page.
         $middleware->redirectGuestsTo(fn (Request $request) => null);
-        $middleware->alias(['service.token' => \App\Http\Middleware\ServiceToken::class]);
+        $middleware->alias(['service.token' => \App\Http\Middleware\ServiceToken::class, 'admin' => \App\Http\Middleware\AdminOnly::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*') || $request->expectsJson());

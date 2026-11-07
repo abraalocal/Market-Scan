@@ -87,6 +87,10 @@ components:
         visit_uuid: { type: string }
         requested_by: { type: string }
         company_name: { type: string }
+        source: { type: string, enum: [field_visit, owner] }
+        on_abraa: { type: boolean }
+        in_ghl: { type: boolean }
+        note: { type: string, nullable: true }
         current: { type: object, additionalProperties: { type: string, nullable: true } }
         proposed: { type: object, additionalProperties: { type: string, nullable: true } }
         keywords_to_add: { type: array, items: { type: string } }
