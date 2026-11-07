@@ -8,6 +8,7 @@ Photos of shop shelves and business cards → suppliers on abraa.com and GoHighL
 | Database | [`docs/schema.sql`](docs/schema.sql) |
 | API contract | [`docs/openapi.yaml`](docs/openapi.yaml) |
 | Backend plan | [`backend/BUILD.md`](backend/BUILD.md) |
+| abraa.com API needed | [`docs/abraa-api.md`](docs/abraa-api.md) (for Yasser) |
 | Instructions for Claude Code | [`CLAUDE.md`](CLAUDE.md) |
 
 Status: specification. Backend and Capture App to be built from `backend/BUILD.md`.

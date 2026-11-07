@@ -39,6 +39,7 @@ return [
         'base_url' => env('GHL_BASE_URL', 'https://services.leadconnectorhq.com'),
         'version' => '2021-07-28',
         'max_tags' => 50,
+        'abraa_field_id' => env('GHL_FIELD_ABRAA_ID'),   // custom field holding the abraa.com supplier id
     ],
 
     'photos' => ['max_kb' => 12 * 1024, 'max_side' => 1600],
